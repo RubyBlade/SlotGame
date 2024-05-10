@@ -34,16 +34,24 @@ describe SlotGame do
   describe "#check_win" do
     #Проверяем, что метод check_win правильно определяет победную комбинацию на экране.
     it "returns true when there is a win" do
-      config = { reels: [[1, 1, 1], [2, 3, 4], [5, 6, 7]] }
+      config = { reels: [[1, 1, 1], [2, 1, 4], [5, 6, 1]] }
       game = SlotGame.new(config)
-      screen = game.send(:generate_screen)
+      screen = [
+        [1, 2, 3],
+        [4, 1, 6],
+        [7, 8, 1]
+      ]
       expect(game.send(:check_win, screen)).to be true
     end
 
     it "returns false when there is no win" do
       config = { reels: [[1, 2, 3], [4, 5, 6], [7, 8, 9]] }
       game = SlotGame.new(config)
-      screen = game.send(:generate_screen)
+      screen = [
+        [1, 2, 3],
+        [4, 3, 6],
+        [7, 8, 1]
+      ]
       expect(game.send(:check_win, screen)).to be false
     end
   end
