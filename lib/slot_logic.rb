@@ -4,6 +4,7 @@ class SlotGame
   end
 
   def spin
+   loop do
     screen = generate_screen
     display_screen(screen)
 
@@ -12,6 +13,11 @@ class SlotGame
     else
       puts "No win this time. Try again!"
     end
+
+    puts "Press Enter to spin again or type 'exit' to quit."
+    input = gets.chomp.downcase
+    break if input == 'exit'
+   end
   end
 
   private
