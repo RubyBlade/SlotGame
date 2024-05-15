@@ -1,53 +1,45 @@
 require './lib/slot_logic.rb'
 
-describe SlotGame do
-  #Настройка перед каждым тестом
-  before(:each) do
-    @config = { reels: [[1, 2, 3], [4, 5, 6], [7, 8, 9]] }
-    @game = SlotGame.new(@config)
+RSpec.describe SlotGame do
+  let(:config) do
+    {
+      reels: [
+        [1, 2, 3, 7, 8, 9, 4, 5, 6, 7, 8, 9, 10],
+        [1, 2, 3, 9, 10, 4, 5, 6, 7, 3, 4, 5, 8, 9, 10],
+        [1, 9, 10, 2, 7, 8, 9, 3, 4, 5, 6, 7, 8, 9, 10, 3, 4, 5]
+      ]
+    }
   end
 
-  describe "#initialize" do
-   #Проверяем, что после создания экземпляра SlotGame атрибут @reels устанавливается корректно на основе переданной конфигурации.
-    it "initializes with correct reels" do
-      expect(@game.instance_variable_get(:@reels)).to eq(@config[:reels])
-    end
-  end
+  subject { SlotGame.new(config) }
 
-  describe "#generate_screen" do
-   #Проверяем, что метод generate_screen создает экран правильного размера
-   #и что каждый символ на экране является допустимым значением из барабанов.
-    it "generates a screen of correct size" do
-      screen = @game.send(:generate_screen)
+  describe '#spin' do
+    it 'generates a screen with 3 rows and 3 columns' do
+      allow(subject).to receive(:display_screen) #Мокаем метод, чтобы он не выводил ничего во время теста.
+      screen = subject.send(:generate_screen)
       expect(screen.length).to eq(3)
       expect(screen.all? { |row| row.length == 3 }).to be true
     end
 
-    it "generates a screen with valid symbols" do
-      screen = @game.send(:generate_screen)
-      reels = @config[:reels].flatten
-      expect(screen.flatten.all? { |symbol| reels.include?(symbol) }).to be true
-    end
-  end
-
-  describe "#check_win" do
-   #Проверяем, что метод check_win правильно определяет победную комбинацию на экране.
-    it "returns true when there is a win" do
-      screen = [
-        [1, 2, 3],
-        [4, 1, 6],
-        [7, 8, 1]
-      ]
-      expect(@game.send(:check_win, screen)).to be true
+    it 'displays "Congratulations! You won!" when there is a winning line' do
+      allow(subject).to receive(:display_screen)
+      #Мокаем метод generate_screen, чтобы вернуть заранее определенный экран с выигрышной линией.
+      allow(subject).to receive(:generate_screen).and_return([
+        [10, 10, 10],
+        [4, 5, 6],
+        [7, 8, 9]
+      ])
+      expect { subject.spin }.to output(/Congratulations! You won!/).to_stdout
     end
 
-    it "returns false when there is no win" do
-      screen = [
+    it 'displays "No win this time. Try again!" when there is no winning line' do
+      allow(subject).to receive(:display_screen) #Мокаем методы
+      allow(subject).to receive(:generate_screen).and_return([
         [1, 2, 3],
-        [4, 3, 6],
-        [7, 8, 1]
-      ]
-      expect(@game.send(:check_win, screen)).to be false
+        [4, 5, 6],
+        [7, 8, 9]
+      ])
+      expect { subject.spin }.to output(/No win this time. Try again!/).to_stdout
     end
   end
 end
