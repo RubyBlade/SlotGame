@@ -59,6 +59,16 @@ class SlotGame
     winning_lines << (0...@rows).map { |i| screen[i][i] }
     winning_lines << (0...@rows).map { |i| screen[i][@rows - 1 - i] }
 
-    winning_lines.any? { |line| line.uniq.length == 1 }
+    # Проверка на выигрыш с учетом WILD
+    winning_lines.any? { |line| winning_line?(line) }
   end
+
+  def winning_line?(line)
+    # Убираем символы WILD для проверки уникальности остальных символов
+    non_wild_symbols = line.reject { |symbol| symbol == WILD_SYMBOL }
+
+    # Если все оставшиеся символы одинаковы, или если все символы - WILD, то линия выигрышная
+    non_wild_symbols.uniq.length <= 1
+  end
+
 end
