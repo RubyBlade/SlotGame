@@ -1,6 +1,11 @@
 class SlotGame
+  WILD_SYMBOL = 'W'  # Символ для 'wild'
+
   def initialize(config)
     @reels = config[:reels]
+    @rows = 3
+    @cols = @reels.length
+    raise ArgumentError, "Reels must be an array of length #{@cols}" unless @reels.length == @cols
   end
 
   def spin
@@ -17,9 +22,20 @@ class SlotGame
   private
 
   def generate_screen
-    screen = Array.new(3) { Array.new(3) }
-    (0..2).each do |col|
-      @reels[col].sample(3).each_with_index do |value, row|
+    screen = Array.new(@rows) { Array.new(@cols) }
+    @cols.times do |col|
+      reel = @reels[col]
+      start_index = rand(reel.length)
+      # Случайная позиция на барабане
+      symbols = (0...@rows).map { |i| reel[(start_index + i) % reel.length] }
+
+      # Добавляем wild с вероятностью 1/10
+      if rand < 0.1
+        wild_position = rand(@rows)
+        symbols[wild_position] = WILD_SYMBOL
+      end
+
+      symbols.each_with_index do |value, row|
         screen[row][col] = value
       end
     end
@@ -31,13 +47,17 @@ class SlotGame
   end
 
   def check_win(screen)
-    winning_lines = [
-      [screen[0][0], screen[1][1], screen[2][2]],
-      [screen[0][2], screen[1][1], screen[2][0]],
-      screen[0],
-      screen[1],
-      screen[2]
-    ]
+    winning_lines = []
+
+    # Добавляем строки
+    winning_lines.concat(screen)
+
+    # Добавляем столбцы
+    @cols.times { |col| winning_lines << screen.map { |row| row[col] } }
+
+    # Добавляем диагонали
+    winning_lines << (0...@rows).map { |i| screen[i][i] }
+    winning_lines << (0...@rows).map { |i| screen[i][@rows - 1 - i] }
 
     winning_lines.any? { |line| line.uniq.length == 1 }
   end
